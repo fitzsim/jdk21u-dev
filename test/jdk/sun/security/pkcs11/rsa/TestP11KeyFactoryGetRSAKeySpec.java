@@ -39,14 +39,14 @@ import java.security.spec.*;
  * @library /test/lib ..
  * @run main/othervm TestP11KeyFactoryGetRSAKeySpec
  * @run main/othervm -Djava.security.manager=allow TestP11KeyFactoryGetRSAKeySpec sm rsakeys.ks.policy
- * @run main/othervm -DCUSTOM_P11_CONFIG_NAME=p11-nss-sensitive.txt TestP11KeyFactoryGetRSAKeySpec
+ * @run main/othervm -DCUSTOM_P11_CONFIG_VARIANT=sensitive TestP11KeyFactoryGetRSAKeySpec
  * @modules jdk.crypto.cryptoki
  */
 
 public class TestP11KeyFactoryGetRSAKeySpec extends PKCS11Test {
     private static boolean testingSensitiveKeys = false;
     public static void main(String[] args) throws Exception {
-        testingSensitiveKeys = "p11-nss-sensitive.txt".equals(System.getProperty("CUSTOM_P11_CONFIG_NAME"));
+        testingSensitiveKeys = "sensitive".equals(System.getProperty("CUSTOM_P11_CONFIG_VARIANT"));
         main(new TestP11KeyFactoryGetRSAKeySpec(), args);
     }
 
