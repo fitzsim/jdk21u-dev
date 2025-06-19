@@ -479,6 +479,7 @@ public abstract class PKCS11Test {
     }
 
     public static String getNssConfig() throws Exception {
+        nss_library = System.getProperty("CUSTOM_P11_LIBRARY_NAME", nss_library);
         String libdir = getNSSLibDir();
         if (libdir == null) {
             return null;
@@ -500,6 +501,11 @@ public abstract class PKCS11Test {
 
         String customConfig = System.getProperty("CUSTOM_P11_CONFIG");
         String customConfigName = System.getProperty("CUSTOM_P11_CONFIG_NAME", "p11-nss.txt");
+        String customConfigVariant = System.getProperty("CUSTOM_P11_CONFIG_VARIANT");
+        if (customConfigVariant != null) {
+            customConfigName = customConfigName.replace(".txt", "-" + customConfigVariant + ".txt");
+        }
+        System.out.println("Configuration file: " + customConfigName);
         System.setProperty("pkcs11test.nss.lib", libfile);
         System.setProperty("pkcs11test.nss.db", dbdir);
         return (customConfig != null) ?
