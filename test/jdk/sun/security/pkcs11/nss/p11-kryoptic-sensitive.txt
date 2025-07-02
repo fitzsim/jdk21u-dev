@@ -1,5 +1,5 @@
 name = Kryoptic
-slot = 42
+slot = 0
 showInfo = true
 library = ${pkcs11test.nss.lib}
 # Not yet available on 21: cipherTextStealingVariant = CS1
