@@ -30,19 +30,26 @@ JDK="$(realpath "${JDK_BIN}"/..)"
 ROOT="$(realpath "${JDK}"/..)"
 
 # Initialize Kryoptic token.
-export KRYOPTIC="${ROOT}"
+export KRYOPTIC=${KRYOPTIC:-"${ROOT}"}
 # Note intentional extra "P" in "TMPPDIR".
 export TMPPDIR="${ROOT}"/kryoptic-configuration
 export TESTSSRCDIR="${ROOT}"/pkcs11-provider/tests
-export TOKDIR="${TMPPDIR}"
+export TOKDIR="${TMPPDIR}/db"
 export PINVALUE="fo0m4nchU"
-mkdir --parents "${TMPPDIR}"
+mkdir --parents "${TOKDIR}"
 title() { echo "$@"; }
 # Needed so that kryoptic.nss-init.sh can be rerun without error.
-rm --force "${TMPPDIR}"/cert9.db
+rm --force "${TOKDIR}"/cert9.db
 # Clean up other files too.
-rm --force "${TMPPDIR}"/key4.db "${TMPPDIR}"/kryoptic.conf "${TMPPDIR}"/libkryoptic_pkcs11.so
+rm --force "${TOKDIR}"/key4.db \
+   "${TOKDIR}"/kryoptic.conf \
+   "${TMPPDIR}"/kryoptic.conf \
+   "${TMPPDIR}"/libkryoptic_pkcs11.so
 source "${TESTSSRCDIR}"/kryoptic.nss-init.sh
+# Remove superfluous configuration file created by kryoptic-init.sh
+# when it is called from kryoptic.nss-init.sh (which creates its own
+# configuration file, "${TMPPDIR}"/kryoptic.conf).
+rm --force "${TOKDIR}"/kryoptic.conf
 
 # PKCS11Test.java does a depth-first search for the first file with
 # this name under jdk.test.lib.artifacts.nsslib-linux_x64.  It finds
@@ -66,13 +73,18 @@ for index in "${!tests[@]}"
 do
     tests[index]="${JDK}"/test/jdk/sun/security/pkcs11/"${tests[index]}"
 done
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
-"${ROOT}"/jtreg/bin/jtreg -verbose:fail,error \
+NATIVE_DEBUGGER=${NATIVE_DEBUGGER:-}
+export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-21-openjdk}
+JAVA_RUNNER=${JAVA_RUNNER:-java}
+${NATIVE_DEBUGGER} "${JAVA_HOME}"/bin/"${JAVA_RUNNER}" \
+    -Dprogram=jtreg \
+    -jar "${ROOT}"/jtreg/lib/jtreg.jar \
+    -verbose:fail,error \
     -javaoption:-DCUSTOM_P11_CONFIG_NAME=p11-kryoptic.txt \
     -javaoption:-DCUSTOM_P11_LIBRARY_NAME=kryoptic_pkcs11 \
     -javaoption:-Djdk.test.lib.artifacts.nsslib-linux_x64="${TMPPDIR}" \
     -javaoption:-DCUSTOM_DB_DIR="${TMPPDIR}" \
-    -testjdk:/usr/lib/jvm/java-21-openjdk \
+    -testjdk:"${JAVA_HOME}" \
     -javacoption:-g \
     "${tests[@]}"
 
